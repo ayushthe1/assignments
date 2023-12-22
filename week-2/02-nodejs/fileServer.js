@@ -17,5 +17,46 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 
+// app.use(express.json())
 
+app.get('/files',getAllFiles)
+app.get('/file/:filename' ,giveFile)
+app.use((req, res, next) => {
+  res.status(404).send('Route not found');
+});
+
+
+// app.listen(3000, () => {
+//   console.log('Server is listening on port 3000');
+// });
 module.exports = app;
+
+function getAllFiles(req,res){
+  const filepath = path.join(__dirname,'files')
+  console.log(filepath)
+  let fileslist = []
+
+  fs.readdir(filepath, (error, files) => {
+    if(error){
+      res.status(500).json()
+      return
+    }
+    files.forEach(file => fileslist.push(file))
+    console.log(fileslist)
+    res.json(fileslist)
+  })
+}
+
+function giveFile(req,res){
+  const filename = req.params.filename
+  const filepath = path.join(__dirname,'files',filename)
+  console.log(filepath)
+
+  fs.readFile(filepath, (error, data) => {
+    if(error){
+      res.status(404).send('File not found');
+      return 
+    }
+    res.send(data)
+  })
+}

@@ -39,6 +39,8 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
+
+
   const express = require('express');
   const bodyParser = require('body-parser');
   
@@ -46,4 +48,78 @@
   
   app.use(bodyParser.json());
   
+  let todos = []
+  
+  
+  app.get('/todos',getTodos)
+  app.get('/todos/:id',getTodoById)
+  app.post('/todos', postTodo)
+  app.put('/todos/:id', updateTodo)
+  app.delete('/todos/:id', deleteTodo)
+  
+  
+  // for all other routes, return 404
+  app.use((req, res, next) => {
+    res.status(404).send();
+  });
+  
   module.exports = app;
+
+
+  function getTodos(req, res){
+    res.status(200).json(todos)
+  }
+
+  function getTodoById(req, res){
+    const todoId = parseInt(req.params.id)
+    const reqId = (item) => item.id == todoId
+    const index = todos.findIndex(reqId)
+
+    if(index == -1){
+      res.status(404).json("BAD")
+    }else{
+      res.json(todos[index])
+    }
+  }
+
+  function postTodo(req,res){
+
+    const newTodo = {
+      id: (Math.floor(Math.random() * 100)) ,
+      title: req.body.title,
+      description: req.body.description
+    }
+
+    todos.push(newTodo)
+    res.status(201).json(newTodo);
+
+  }
+
+  function updateTodo(req,res){
+    const todoId = req.params.id
+  
+    for(let i=0; i<todos.length; i++){
+      if(todos[i].id == todoId){
+        todos[i].description = req.body.description
+        todos[i].title = req.body.title
+        res.json()
+        return
+      }
+    }
+
+    res.status(404).json()
+  }
+
+  function deleteTodo(req,res){
+    const todoId = req.params.id
+    for(let i=0; i<todos.length; i++){
+      if(todos[i].id == todoId){
+        todos.splice(i,1)
+        res.status(200).json({
+          suc: "Successfully deleted"
+        })
+        return
+      }
+    }
+    res.status(404).json()
+  }
